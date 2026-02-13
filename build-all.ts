@@ -44,7 +44,10 @@ for (const platform of platforms) {
         __GIT_HASH__: JSON.stringify(gitHash),
         "process.env.NODE_ENV": JSON.stringify("production"),
       },
-      minify: true,
+      minify: {
+        whitespace: true,
+        syntax: true,
+      },
       outdir,
     });
     console.log(`✅ Successfully built for ${platform.target}`);

@@ -28,7 +28,10 @@ await build({
     __GIT_HASH__: JSON.stringify(gitHash),
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
-  minify: true,
+  minify: {
+    whitespace: true,
+    syntax: true,
+  }
 });
 
 console.log(`Built ${outdir}/${outfile}`);
