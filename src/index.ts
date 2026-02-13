@@ -1,24 +1,20 @@
-import { Elysia } from "elysia";
-import { staticPlugin } from "@elysiajs/static";
+import { logger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
+import { Elysia } from "elysia";
 
 import index from './index.html'
 
 export const app = new Elysia()
+  .use(logger())
 	.use(
 		openapi({
 			references: fromTypes()
 		})
 	)
-	// .use(
-	// 	await staticPlugin({
-	// 		prefix: '/'
-	// 	})
-	// )
   .get('/', index)
 	.get('/message', { message: 'Hello from server' } as const)
 	.listen(3000)
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 Elysia is running at ${app.server?.url}`
 );
