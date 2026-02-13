@@ -1,6 +1,8 @@
 import { logger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, type Context } from "elysia";
+import { helmet } from 'elysia-helmet';
+
 
 import index from './index.html'
 
@@ -11,13 +13,14 @@ const spaPath = `/${crypto.randomUUID()}`;
 // Also shortcircuits the pattern matching with dynamic handlers
 // For example, if you try to access spaPath it will return without running through the middleware (logger, etc)
 // see also: https://github.com/oven-sh/bun/issues/17595
-const spaProxy = async (context: Pick<Context, 'server'>) => {
+const spaProxy = async ({ server }: Pick<Context, 'server'>) => {
   // Potentially can rewrite content as well
-  return await fetch(`${context.server?.url}${spaPath}`);
+  return await fetch(`${server?.url}${spaPath}`);
 }
 
 export const app = new Elysia()
   .use(logger())
+  .use(helmet())
 	.use(
 		openapi({
 			references: fromTypes()
@@ -27,6 +30,8 @@ export const app = new Elysia()
 	.get('/message', { message: 'Hello from server' } as const)
 	.get('/*', spaProxy)
 	.listen(4000)
+
+export type App = typeof app;
 
 console.log(
   `🦊 Elysia is running at ${app.server?.url}`
