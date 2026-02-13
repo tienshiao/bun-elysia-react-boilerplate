@@ -1,8 +1,20 @@
 import { logger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
-import { Elysia } from "elysia";
+import { Elysia, type Context } from "elysia";
 
 import index from './index.html'
+
+const apiPrefix = '/api';
+const spaPath = `/${crypto.randomUUID()}`;
+// SPA Proxy is used to serve the SPA and run through the middleware
+// Otherwise Bun shortcircuits the request and returns the SPA directly
+// Also shortcircuits the pattern matching with dynamic handlers
+// For example, if you try to access spaPath it will return without running through the middleware (logger, etc)
+// see also: https://github.com/oven-sh/bun/issues/17595
+const spaProxy = async (context: Pick<Context, 'server'>) => {
+  // Potentially can rewrite content as well
+  return await fetch(`${context.server?.url}${spaPath}`);
+}
 
 export const app = new Elysia()
   .use(logger())
@@ -11,9 +23,10 @@ export const app = new Elysia()
 			references: fromTypes()
 		})
 	)
-  .get('/', index)
+  .get(spaPath, index)
 	.get('/message', { message: 'Hello from server' } as const)
-	.listen(3000)
+	.get('/*', spaProxy)
+	.listen(4000)
 
 console.log(
   `🦊 Elysia is running at ${app.server?.url}`
