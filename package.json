@@ -3,7 +3,7 @@
   "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts",
+    "dev": "tsr watch & bun run --watch src/index.ts",
     "build:server": "bun run build-single.ts",
     "build:server:all": "bun run build-all.ts"
   },
@@ -13,6 +13,7 @@
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/static": "1.4.7",
     "@tanstack/react-query": "^5.90.10",
+    "@tanstack/react-router": "^1.159.9",
     "clsx": "^2.1.1",
     "elysia": "^1.4.16",
     "elysia-helmet": "^3.0.0",
@@ -21,6 +22,8 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "@tanstack/react-router-devtools": "^1.159.9",
+    "@tanstack/router-cli": "^1.159.9",
     "@types/bun": "latest",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",

@@ -4,7 +4,7 @@ import { Elysia, type Context } from "elysia";
 import { helmet } from 'elysia-helmet';
 
 
-import index from './index.html'
+import index from './frontend/index.html'
 
 const apiPrefix = '/api';
 const spaPath = `/${crypto.randomUUID()}`;

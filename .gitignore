@@ -41,5 +41,8 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 
+# generated route tree
+src/routeTree.gen.ts
+
 # executables
 /dist-executables

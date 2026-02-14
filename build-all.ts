@@ -1,5 +1,7 @@
 // build-all.ts
 import { build, $ } from "bun";
+
+// Generate route tree before building
 import * as fs from "fs";
 import * as path from "path";
 
@@ -13,6 +15,9 @@ const platforms = [
   { platform: "linux", arch: "x64", target: "bun-linux-x64", outfile: `${outfile}-linux-x64` },
   { platform: "win", arch: "x64", target: "bun-windows-x64", outfile: `${outfile}-windows-x64.exe` },
 ];
+
+// Generate route tree before building
+await $`bunx tsr generate`;
 
 // Get version info
 const packageJson = await Bun.file("./package.json").json();

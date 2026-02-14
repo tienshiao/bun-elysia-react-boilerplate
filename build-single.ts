@@ -1,10 +1,14 @@
 // build-single.ts - Build a single binary for the current platform
 import { build, $ } from "bun";
+
 import * as fs from "fs";
 
 const entrypoint = "./src/index.ts";
 const outdir = "./dist-executables";
 const outfile = "server";
+
+// Generate route tree before building
+await $`bunx tsr generate`;
 
 // Get version info
 const packageJson = await Bun.file("./package.json").json();
