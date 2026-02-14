@@ -30,7 +30,14 @@ const spaProxy = async ({ server }: Pick<Context, 'server'>) => {
 
 export const app = new Elysia()
   .use(log.into())
-  .use(helmet())
+  .use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "https:", "'unsafe-inline'"],
+      },
+    },
+  }))
 	.use(
 		openapi({
 			references: fromTypes()
