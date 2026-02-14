@@ -1,5 +1,6 @@
 // build-single.ts - Build a single binary for the current platform
 import { build, $ } from "bun";
+import tailwind from "bun-plugin-tailwind";
 
 import * as fs from "fs";
 
@@ -32,6 +33,7 @@ await build({
     __GIT_HASH__: JSON.stringify(gitHash),
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
+  plugins: [tailwind],
   minify: {
     whitespace: true,
     syntax: true,

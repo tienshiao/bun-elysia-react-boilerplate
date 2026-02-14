@@ -1,5 +1,6 @@
 // build-all.ts
 import { build, $ } from "bun";
+import tailwind from "bun-plugin-tailwind";
 
 // Generate route tree before building
 import * as fs from "fs";
@@ -49,6 +50,7 @@ for (const platform of platforms) {
         __GIT_HASH__: JSON.stringify(gitHash),
         "process.env.NODE_ENV": JSON.stringify("production"),
       },
+      plugins: [tailwind],
       minify: {
         whitespace: true,
         syntax: true,
