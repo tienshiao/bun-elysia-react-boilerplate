@@ -1,10 +1,15 @@
-import { logger } from "@bogeychan/elysia-logger";
+import { createPinoLogger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, type Context } from "elysia";
 import { helmet } from 'elysia-helmet';
 
 
 import index from './frontend/index.html'
+
+declare const __VERSION__: string | undefined;
+declare const __GIT_HASH__: string | undefined;
+
+const log = createPinoLogger();
 
 const apiPrefix = '/api';
 const spaPath = `/${crypto.randomUUID()}`;
@@ -14,18 +19,28 @@ const spaPath = `/${crypto.randomUUID()}`;
 // For example, if you try to access spaPath it will return without running through the middleware (logger, etc)
 // see also: https://github.com/oven-sh/bun/issues/17595
 const spaProxy = async ({ server }: Pick<Context, 'server'>) => {
-  // Potentially can rewrite content as well
-  return await fetch(`${server?.url}${spaPath}`);
+  const response = await fetch(`${server?.url}${spaPath}`);
+  if (typeof __VERSION__ === 'undefined') return response;
+  const html = await response.text();
+  return new Response(
+    html.replace(/<html([^>]*)>/, `<html$1 data-version="${__VERSION__} (${__GIT_HASH__})">`),
+    response,
+  );
 }
 
 export const app = new Elysia()
-  .use(logger())
+  .use(log.into())
   .use(helmet())
 	.use(
 		openapi({
 			references: fromTypes()
 		})
 	)
+  .onBeforeHandle(({ set }) => {
+    set.headers['x-version'] = typeof __VERSION__ !== 'undefined'
+      ? `${__VERSION__} (${__GIT_HASH__})`
+      : 'dev';
+  })
   .get(spaPath, index)
 	.get('/message', { message: 'Hello from server' } as const)
 	.get('/*', spaProxy)
@@ -33,6 +48,7 @@ export const app = new Elysia()
 
 export type App = typeof app;
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.url}`
-);
+log.info({ url: app.server?.url?.toString() }, 'Server started');
+if (typeof __VERSION__ !== 'undefined') {
+  log.info({ version: __VERSION__, gitHash: __GIT_HASH__ }, 'Build info');
+}

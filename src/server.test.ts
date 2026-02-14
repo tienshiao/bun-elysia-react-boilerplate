@@ -18,4 +18,10 @@ describe('SPA', () => {
       expect(response.status).toBe(200);
       expect(await response.text()).toStartWith('<!doctype html>');
     });
+    it('includes x-version header', async () => {
+      const response = await app
+        .handle(new Request('http://localhost/'))
+
+      expect(response.headers.get('x-version')).toBe('dev');
+    });
 })
