@@ -5,8 +5,7 @@ import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import * as schema from '@/db/schema/index.ts';
-import { authPlugin } from './plugin.ts';
-import { authGuard } from './guard.ts';
+import { authPlugin, authGuard } from './index.ts';
 
 const testClient = postgres(process.env.DATABASE_URL!);
 const testDb = drizzle(testClient, { schema });

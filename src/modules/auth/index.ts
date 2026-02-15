@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia';
 import { jwt } from '@elysiajs/jwt';
 import { importPKCS8, importSPKI } from 'jose';
 import { dbPlugin } from '@/db/index.ts';
-import * as handlers from './handlers.ts';
+import { AuthService } from './service.ts';
 
 const privateKeyPem = process.env.JWT_PRIVATE_KEY
   ?? await Bun.file('keys/private.pem').text();
@@ -34,7 +34,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
     alg: 'RS256',
   }))
   .post('/sign-up', async ({ jwt, db, body, set }) => {
-    const result = await handlers.signUp(db, jwt, body);
+    const result = await AuthService.signUp(db, jwt, body);
     set.status = result.status;
     return result.data;
   }, {
@@ -49,7 +49,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
     },
   })
   .post('/sign-in', async ({ jwt, db, body, set }) => {
-    const result = await handlers.signIn(db, jwt, body);
+    const result = await AuthService.signIn(db, jwt, body);
     set.status = result.status;
     return result.data;
   }, {
@@ -63,7 +63,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
     },
   })
   .post('/sign-out', async ({ db, body }) => {
-    const result = await handlers.signOut(db, body);
+    const result = await AuthService.signOut(db, body);
     return result.data;
   }, {
     body: t.Object({
@@ -74,7 +74,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
     },
   })
   .post('/refresh', async ({ jwt, jwtRefreshVerify, db, body, set }) => {
-    const result = await handlers.refresh(db, jwt, jwtRefreshVerify, body);
+    const result = await AuthService.refresh(db, jwt, jwtRefreshVerify, body);
     set.status = result.status;
     return result.data;
   }, {
@@ -86,3 +86,5 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
       401: t.Object({ error: t.String() }),
     },
   });
+
+export { authGuard } from './guard.ts';

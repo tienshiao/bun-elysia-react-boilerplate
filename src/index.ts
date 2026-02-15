@@ -2,7 +2,7 @@ import { createPinoLogger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, type Context } from "elysia";
 import { helmet } from 'elysia-helmet';
-import { authPlugin } from '@/auth/index.ts';
+import { authPlugin } from '@/modules/auth/index.ts';
 
 import index from './frontend/index.html'
 
