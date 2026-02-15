@@ -46,3 +46,5 @@ src/routeTree.gen.ts
 
 # executables
 /dist-executables
+
+/docker-data

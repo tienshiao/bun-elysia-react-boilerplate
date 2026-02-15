@@ -2,7 +2,7 @@ import { createPinoLogger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, type Context } from "elysia";
 import { helmet } from 'elysia-helmet';
-
+import { authPlugin } from '@/auth/index.ts';
 
 import index from './frontend/index.html'
 
@@ -48,6 +48,7 @@ export const app = new Elysia()
       ? `${__VERSION__} (${__GIT_HASH__})`
       : 'dev';
   })
+  .use(authPlugin)
   .get(spaPath, index)
 	.get('/message', { message: 'Hello from server' } as const)
 	.get('/*', spaProxy)
