@@ -73,3 +73,15 @@ bun test src/modules/auth/auth.test.ts
 ```
 
 Tests use schema-isolated PostgreSQL databases via `makeTestDb()` — each test file gets its own schema (prefixed with `test_`), enabling safe parallel execution. Schemas are preserved after tests for debugging.
+
+## Linting & Formatting
+
+```bash
+# Check (CI)
+bun run check
+
+# Auto-fix
+bun run fix
+```
+
+ESLint (flat config) with `typescript-eslint`, `react-hooks`, `react-refresh`, and `simple-import-sort`. Prettier handles formatting (double quotes, semis, trailing commas, 100 print width). The two tools are kept separate — `eslint-config-prettier` disables conflicting rules.
