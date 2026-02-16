@@ -30,7 +30,7 @@ Anyone who possesses a refresh token string can revoke it, which is arguably fin
 
 ### 7. `typ` claim collides with JWT header `typ` (`handlers.ts:15, guard.ts:24`)
 
-The standard JWT header already has a `typ` field (typically `"JWT"`). You're adding `typ` to the *payload*, which works but is non-standard. The registered claim for this purpose is actually not defined in RFC 7519 — consider using a namespaced claim like `token_type` or a short custom claim to avoid any confusion with libraries that inspect the header `typ`. This is a style concern, not a security bug — `@elysiajs/jwt` / jose won't confuse the two.
+The standard JWT header already has a `typ` field (typically `"JWT"`). You're adding `typ` to the _payload_, which works but is non-standard. The registered claim for this purpose is actually not defined in RFC 7519 — consider using a namespaced claim like `token_type` or a short custom claim to avoid any confusion with libraries that inspect the header `typ`. This is a style concern, not a security bug — `@elysiajs/jwt` / jose won't confuse the two.
 
 ### 8. Dual expiry source for refresh tokens
 
@@ -54,12 +54,12 @@ This is only used internally and in no other module. Making it `export` exposes 
 
 ## Summary — Priority Order
 
-| # | Severity | Issue |
-|---|----------|-------|
-| 3 | **High** | Soft-deleted users can refresh tokens |
-| 2 | **High** | `signUp` inserts not transactional |
-| 1 | **Medium** | Race condition on email/username uniqueness |
-| 5 | **Medium** | No per-user refresh token limit |
-| 4 | **Low** | Stale username in auth token (mitigated by short TTL) |
-| 7 | **Low** | `typ` claim naming convention |
-| 8 | **Info** | Dual expiry source documentation |
+| #   | Severity   | Issue                                                 |
+| --- | ---------- | ----------------------------------------------------- |
+| 3   | **High**   | Soft-deleted users can refresh tokens                 |
+| 2   | **High**   | `signUp` inserts not transactional                    |
+| 1   | **Medium** | Race condition on email/username uniqueness           |
+| 5   | **Medium** | No per-user refresh token limit                       |
+| 4   | **Low**    | Stale username in auth token (mitigated by short TTL) |
+| 7   | **Low**    | `typ` claim naming convention                         |
+| 8   | **Info**   | Dual expiry source documentation                      |
