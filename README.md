@@ -1,15 +1,67 @@
-# Elysia with Bun runtime
+# Bun + Elysia + React Boilerplate
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
+Full-stack monolithic app: Elysia backend serving a React 19 SPA, all running on Bun.
+
+## Prerequisites
+
+- [Bun](https://bun.sh/)
+- PostgreSQL
+
+## Setup
+
 ```bash
-bun create elysia ./elysia-example
+bun install
 ```
 
+### Database
+
+The app connects to PostgreSQL via the `DATABASE_URL` env var. Default:
+
+```
+postgres://bp_user:bp_password@localhost:5432/boilerplate_development
+```
+
+Run migrations:
+
+```bash
+bunx drizzle-kit migrate
+```
+
+### JWT Keys
+
+Provide ES256 (ECDSA) key pair via either:
+
+- Environment variables: `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`
+- PEM files: `keys/private.pem`, `keys/public.pem`
+
 ## Development
-To start the development server run:
+
 ```bash
 bun run dev
 ```
 
-Open http://localhost:3000/ with your browser to see the result.
+Open http://localhost:4000/ to see the app.
+
+## Build
+
+```bash
+# Current platform
+bun run build:server
+
+# All platforms (macOS x64/ARM64, Linux x64, Windows x64)
+bun run build:server:all
+```
+
+Outputs standalone executables to `dist-executables/`.
+
+## Testing
+
+```bash
+# Run all tests
+bun test
+
+# Run a single test file
+bun test src/modules/auth/auth.test.ts
+```
+
+Tests use schema-isolated PostgreSQL databases via `makeTestDb()` — each test file gets its own schema (prefixed with `test_`), enabling safe parallel execution. Schemas are preserved after tests for debugging.
