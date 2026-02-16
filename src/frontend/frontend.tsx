@@ -5,12 +5,15 @@
  * It is included in `src/index.html`.
  */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import { AuthProvider } from "./lib/auth-context.tsx";
 import { routeTree } from "./routeTree.gen";
 
+const queryClient = new QueryClient();
 const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
@@ -22,7 +25,11 @@ declare module "@tanstack/react-router" {
 const elem = document.getElementById("root")!;
 const app = (
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </QueryClientProvider>
   </StrictMode>
 );
 

@@ -13,17 +13,13 @@ import { Input } from "@/frontend/components/ui/input";
 import { Label } from "@/frontend/components/ui/label";
 import { useAuth } from "@/frontend/lib/auth-context.tsx";
 
-export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    next: (search.next as string) || "/",
-  }),
-  component: LoginPage,
+export const Route = createFileRoute("/signup")({
+  component: SignUpPage,
 });
 
-function LoginPage() {
-  const { next } = Route.useSearch();
+function SignUpPage() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,12 +31,13 @@ function LoginPage() {
     const form = new FormData(e.currentTarget);
     const email = form.get("email") as string;
     const password = form.get("password") as string;
+    const username = form.get("username") as string;
 
     try {
-      await signIn(email, password);
-      navigate({ to: next });
+      await signUp(email, password, username);
+      navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      setError(err instanceof Error ? err.message : "Sign up failed");
     } finally {
       setLoading(false);
     }
@@ -50,27 +47,31 @@ function LoginPage() {
     <div className="flex min-h-[80vh] items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>Enter your credentials to continue</CardDescription>
+          <CardTitle className="text-2xl">Sign up</CardTitle>
+          <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && <p className="text-sm text-red-500">{error}</p>}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" name="username" type="text" required />
+            </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" name="email" type="email" placeholder="you@example.com" required />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
+              <Input id="password" name="password" type="password" minLength={8} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Creating account..." : "Sign up"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link to="/signup" className="underline">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/login" className="underline">
+                Sign in
               </Link>
             </p>
           </form>
