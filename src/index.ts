@@ -51,6 +51,15 @@ export const app = new Elysia()
 					{ name: 'Auth', description: 'Authentication and token management' },
 					{ name: 'Users', description: 'User profile operations' },
 				],
+				components: {
+					securitySchemes: {
+						bearerAuth: {
+							type: 'http',
+							scheme: 'bearer',
+							bearerFormat: 'JWT',
+						},
+					},
+				},
 			},
 			references: fromTypes()
 		})

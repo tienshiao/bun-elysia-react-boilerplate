@@ -29,7 +29,11 @@ export function makeUsersPlugin(db: Database, allowRoles: AllowRoles) {
         200: userResponseSchema,
         404: errorSchema,
       },
-      detail: { summary: 'Get user profile', description: 'Retrieve a user profile by ID' },
+      detail: {
+        summary: 'Get user profile',
+        description: 'Retrieve a user profile by ID',
+        security: [{ bearerAuth: [] }],
+      },
     })
     .patch('/:userId', async ({ params, body, set }) => {
       const result = await service.updateUser(params.userId, body);
@@ -46,6 +50,10 @@ export function makeUsersPlugin(db: Database, allowRoles: AllowRoles) {
         404: errorSchema,
         409: errorSchema,
       },
-      detail: { summary: 'Update user profile', description: 'Update user profile fields such as username' },
+      detail: {
+        summary: 'Update user profile',
+        description: 'Update user profile fields such as username. Requires admin role or ownership of the profile.',
+        security: [{ bearerAuth: [] }],
+      },
     });
 }
