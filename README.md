@@ -29,10 +29,18 @@ bunx drizzle-kit migrate
 
 ### JWT Keys
 
-Provide ES256 (ECDSA) key pair via either:
+Generate an ES256 (ECDSA P-256) key pair:
 
-- Environment variables: `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`
+```bash
+mkdir -p keys
+openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt -out keys/private.pem
+openssl ec -in keys/private.pem -pubout -out keys/public.pem
+```
+
+The app loads keys from either:
+
 - PEM files: `keys/private.pem`, `keys/public.pem`
+- Environment variables: `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`
 
 ## Development
 

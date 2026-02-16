@@ -10,7 +10,7 @@ export function createJwt(privateKey: KeyLike, publicKey: KeyLike): Jwt {
     async sign(payload) {
       const { exp, nbf, iat, ...rest } = payload;
 
-      let builder = new SignJWT(rest).setProtectedHeader({ alg: 'RS256' });
+      let builder = new SignJWT(rest).setProtectedHeader({ alg: 'ES256' });
 
       if (typeof exp === 'string') {
         builder = builder.setExpirationTime(exp);
@@ -45,7 +45,7 @@ export function createJwt(privateKey: KeyLike, publicKey: KeyLike): Jwt {
 }
 
 export async function makeJwt(jwtConfig: { privateKey: string; publicKey: string }): Promise<Jwt> {
-  const privateKey = await importPKCS8(jwtConfig.privateKey, 'RS256');
-  const publicKey = await importSPKI(jwtConfig.publicKey, 'RS256');
+  const privateKey = await importPKCS8(jwtConfig.privateKey, 'ES256');
+  const publicKey = await importSPKI(jwtConfig.publicKey, 'ES256');
   return createJwt(privateKey, publicKey);
 }

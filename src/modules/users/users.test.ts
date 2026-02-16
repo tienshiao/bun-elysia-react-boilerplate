@@ -13,7 +13,7 @@ import { makeUsersPlugin } from './index.ts';
 const config = await loadConfig();
 const { db: testDb } = await makeTestDb(config.db, 'users');
 const jwt = await makeJwt(config.jwt);
-const authGuard = await makeAuthGuard(config.jwt);
+const authGuard = makeAuthGuard(jwt);
 const allowRoles = makeAllowRoles();
 
 const testApp = new Elysia({ prefix: '/api' })
