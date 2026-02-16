@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/frontend/components/ui/button";
 import {
@@ -13,6 +14,12 @@ import { Input } from "@/frontend/components/ui/input";
 import { Label } from "@/frontend/components/ui/label";
 import { useAuth } from "@/frontend/lib/auth-context.tsx";
 
+interface SignUpForm {
+  username: string;
+  email: string;
+  password: string;
+}
+
 export const Route = createFileRoute("/signup")({
   component: SignUpPage,
 });
@@ -20,26 +27,21 @@ export const Route = createFileRoute("/signup")({
 function SignUpPage() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpForm>();
 
-    const form = new FormData(e.currentTarget);
-    const email = form.get("email") as string;
-    const password = form.get("password") as string;
-    const username = form.get("username") as string;
-
+  async function onSubmit(data: SignUpForm) {
+    setServerError("");
     try {
-      await signUp(email, password, username);
+      await signUp(data.email, data.password, data.username);
       navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign up failed");
-    } finally {
-      setLoading(false);
+      setServerError(err instanceof Error ? err.message : "Sign up failed");
     }
   }
 
@@ -51,22 +53,50 @@ function SignUpPage() {
           <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {error && <p className="text-sm text-red-500">{error}</p>}
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            {serverError && <p className="text-sm text-red-500">{serverError}</p>}
             <div className="flex flex-col gap-2">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" name="username" type="text" required />
+              <Input
+                id="username"
+                type="text"
+                aria-invalid={!!errors.username}
+                {...register("username", { required: "Username is required", minLength: 1 })}
+              />
+              {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                aria-invalid={!!errors.email}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Invalid email address",
+                  },
+                })}
+              />
+              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" minLength={8} required />
+              <Input
+                id="password"
+                type="password"
+                aria-invalid={!!errors.password}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: { value: 8, message: "Password must be at least 8 characters" },
+                })}
+              />
+              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Sign up"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Sign up"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
