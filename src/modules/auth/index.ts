@@ -76,3 +76,6 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
 }
 
 export { makeAuthGuard } from './guard.ts';
+export { makeAllowRoles, EveryoneRole, AuthenticatedRole, AdminRole, UserOwnerRole } from './roles.ts';
+export type { RoleClass, RoleContext, AllowRoles } from './roles.ts';
+export type { AuthUser } from './guard.ts';

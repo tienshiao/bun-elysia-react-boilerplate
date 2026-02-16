@@ -4,6 +4,12 @@ import { bearer } from '@elysiajs/bearer';
 import { importSPKI } from 'jose';
 import { TOKEN_TYPES } from './config.ts';
 
+export interface AuthUser {
+  userId: string;
+  username: string;
+  roles: string[];
+}
+
 export async function makeAuthGuard(jwtConfig: { publicKey: string }) {
   const publicKey = await importSPKI(jwtConfig.publicKey, 'RS256');
 
@@ -14,21 +20,20 @@ export async function makeAuthGuard(jwtConfig: { publicKey: string }) {
       secret: publicKey,
       alg: 'RS256',
     }))
-    .resolve(async ({ jwtVerify, bearer, set }) => {
+    .resolve(async ({ jwtVerify, bearer }) => {
       if (!bearer) {
-        set.status = 401;
-        throw new Error('Unauthorized');
+        return { user: null as AuthUser | null };
       }
       const payload = await jwtVerify.verify(bearer);
       if (!payload || payload.tt !== TOKEN_TYPES.auth) {
-        set.status = 401;
-        throw new Error('Unauthorized');
+        return { user: null as AuthUser | null };
       }
       return {
         user: {
           userId: payload.sub as string,
           username: payload.username as string,
-        },
+          roles: (payload.roles as string[]) ?? [],
+        } as AuthUser | null,
       };
     })
     .as('plugin');

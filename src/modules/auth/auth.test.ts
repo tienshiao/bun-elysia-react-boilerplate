@@ -5,11 +5,13 @@ import { loadConfig } from '@/config.ts';
 import { makeTestDb } from '@/db/test-helpers.ts';
 import { makeJwt } from './jwt.ts';
 import { makeAuthPlugin, makeAuthGuard } from './index.ts';
+import { makeAllowRoles, AuthenticatedRole } from './roles.ts';
 
 const config = await loadConfig();
 const { db: testDb } = await makeTestDb(config.db, 'auth');
 const jwt = await makeJwt(config.jwt);
 const authGuard = await makeAuthGuard(config.jwt);
+const allowRoles = makeAllowRoles();
 
 const apiPlugin = new Elysia({ prefix: '/api' })
   .use(makeAuthPlugin(testDb, jwt));
@@ -20,9 +22,10 @@ const testApp = new Elysia()
   .get('/api/me', ({ user }) => {
     return { userId: user!.userId, username: user!.username };
   }, {
+    ...allowRoles(AuthenticatedRole),
     response: {
       200: t.Object({ userId: t.String(), username: t.String() }),
-      401: t.Object({ error: t.String() }),
+      403: t.Object({ error: t.String() }),
     },
   });
 
@@ -239,7 +242,7 @@ describe('Auth API', () => {
     });
   });
 
-  describe('Auth Guard', () => {
+  describe('Auth Guard + allowRoles', () => {
     it('allows access with valid auth_token', async () => {
       const signUpRes = await signUp('test@test.com', 'password123', 'testuser');
       const { authToken } = await signUpRes.json();
@@ -251,24 +254,24 @@ describe('Auth API', () => {
       expect(body.username).toBe('testuser');
     });
 
-    it('returns 401 without Authorization header', async () => {
+    it('returns 403 without Authorization header', async () => {
       const res = await testApp.handle(
         new Request('http://localhost/api/me')
       );
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(403);
     });
 
-    it('returns 401 with invalid auth_token', async () => {
+    it('returns 403 with invalid auth_token', async () => {
       const res = await getMe('invalid.jwt.token');
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(403);
     });
 
-    it('returns 401 when using a refresh token as auth token', async () => {
+    it('returns 403 when using a refresh token as auth token', async () => {
       const signUpRes = await signUp('test@test.com', 'password123', 'testuser');
       const { refreshToken } = await signUpRes.json();
 
       const res = await getMe(refreshToken);
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(403);
     });
   });
 
