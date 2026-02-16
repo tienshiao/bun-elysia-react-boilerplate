@@ -2,16 +2,13 @@ import { eq, isNull, and } from 'drizzle-orm';
 import { users, usersPrivate, refreshTokens } from '@/db/schema/index.ts';
 import { AUTH_CONFIG, TOKEN_TYPES } from './config.ts';
 import type { Database } from '@/db/index.ts';
+import { isUniqueViolation } from '@/db/errors.ts';
 import type { Jwt } from './jwt.ts';
 
 class ConflictError extends Error {
   constructor(message: string) {
     super(message);
   }
-}
-
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === '23505';
 }
 
 export class AuthService {
