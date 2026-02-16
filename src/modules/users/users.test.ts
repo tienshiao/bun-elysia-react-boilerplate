@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { loadConfig } from '@/config.ts';
 import { makeTestDb } from '@/db/test-helpers.ts';
 import { users, usersPrivate, roles, userRoles } from '@/db/schema/index.ts';
@@ -108,7 +108,7 @@ describe('Users API', () => {
       const user = await seedUser('deleted-user');
       const other = await seedUser('viewer');
       const token = await makeAuthToken(other.userId, 'viewer');
-      await testDb.execute(sql`UPDATE users SET deleted_at = now() WHERE user_id = ${user.userId}`);
+      await testDb.update(users).set({ deletedAt: new Date() }).where(eq(users.userId, user.userId));
 
       const res = await getUser(user.userId, token);
       expect(res.status).toBe(404);
@@ -177,7 +177,7 @@ describe('Users API', () => {
     it('returns 404 for soft-deleted user', async () => {
       const user = await seedUser('del-user');
       const token = await makeAuthToken(user.userId, 'del-user');
-      await testDb.execute(sql`UPDATE users SET deleted_at = now() WHERE user_id = ${user.userId}`);
+      await testDb.update(users).set({ deletedAt: new Date() }).where(eq(users.userId, user.userId));
 
       const res = await patchUser(user.userId, { username: 'new' }, token);
       expect(res.status).toBe(404);

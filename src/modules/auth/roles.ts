@@ -1,4 +1,5 @@
 import type { AuthUser } from './guard.ts';
+import { toShortUuid } from '@/db/short-uuid.ts';
 
 export interface RoleContext {
   user: AuthUser | null;
@@ -37,7 +38,7 @@ export class UserOwnerRole extends Role {
   static resolve(ctx: RoleContext): boolean {
     if (!ctx.user) return false;
     const userId = ctx.params.userId;
-    return userId !== undefined && ctx.user.userId === userId;
+    return userId !== undefined && ctx.user.userId === toShortUuid(userId);
   }
 }
 

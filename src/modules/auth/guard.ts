@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { bearer } from '@elysiajs/bearer';
 import type { Jwt } from './jwt.ts';
 import { TOKEN_TYPES } from './config.ts';
+import { toShortUuid } from '@/db/short-uuid.ts';
 
 export interface AuthUser {
   userId: string;
@@ -22,7 +23,7 @@ export function makeAuthGuard(jwt: Jwt) {
       }
       return {
         user: {
-          userId: payload.sub as string,
+          userId: toShortUuid(payload.sub as string),
           username: payload.username as string,
           roles: (payload.roles as string[]) ?? [],
         } as AuthUser | null,

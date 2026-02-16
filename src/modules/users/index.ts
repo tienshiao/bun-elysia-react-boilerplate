@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { UserService } from './service.ts';
 import type { Database } from '@/db/index.ts';
+import { SHORT_UUID_PATTERN } from '@/db/short-uuid.ts';
 import { AuthenticatedRole, AdminRole, UserOwnerRole } from '@/modules/auth/roles.ts';
 import type { AllowRoles } from '@/modules/auth/roles.ts';
 
@@ -12,7 +13,7 @@ const userResponseSchema = t.Object({
 
 const errorSchema = t.Object({ error: t.String() });
 
-const paramsSchema = t.Object({ userId: t.String({ format: 'uuid' }) });
+const paramsSchema = t.Object({ userId: t.String({ pattern: SHORT_UUID_PATTERN }) });
 
 export function makeUsersPlugin(db: Database, allowRoles: AllowRoles) {
   const service = new UserService(db);
