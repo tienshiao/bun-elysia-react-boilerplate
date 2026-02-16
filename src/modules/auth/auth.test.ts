@@ -1,14 +1,13 @@
-import { describe, expect, it, beforeAll, beforeEach } from 'bun:test';
+import { describe, expect, it, beforeEach } from 'bun:test';
 import { Elysia, t } from 'elysia';
 import { sql } from 'drizzle-orm';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { loadConfig } from '@/config.ts';
-import { makeDb } from '@/db/index.ts';
+import { makeTestDb } from '@/db/test-helpers.ts';
 import { makeJwt } from './jwt.ts';
 import { makeAuthPlugin, makeAuthGuard } from './index.ts';
 
 const config = await loadConfig();
-const { db: testDb } = makeDb(config.db);
+const { db: testDb } = await makeTestDb(config.db, 'auth');
 const jwt = await makeJwt(config.jwt);
 const authGuard = await makeAuthGuard(config.jwt);
 
@@ -71,10 +70,6 @@ async function getMe(authToken: string) {
     })
   );
 }
-
-beforeAll(async () => {
-  await migrate(testDb, { migrationsFolder: './drizzle' });
-});
 
 beforeEach(async () => {
   await testDb.execute(sql`DELETE FROM refresh_tokens`);
