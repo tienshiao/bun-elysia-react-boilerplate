@@ -8,6 +8,7 @@ import { makeTestDb } from "@/db/test-helpers.ts";
 import { AUTH_CONFIG, TOKEN_TYPES } from "@/modules/auth/config.ts";
 import { makeAuthGuard } from "@/modules/auth/guard.ts";
 import { makeJwt } from "@/modules/auth/jwt.ts";
+import { makeMeResolver } from "@/modules/auth/me-resolver.ts";
 import { makeAllowRoles } from "@/modules/auth/roles.ts";
 
 import { makeUsersPlugin } from "./index.ts";
@@ -20,6 +21,7 @@ const allowRoles = makeAllowRoles();
 
 const testApp = new Elysia({ prefix: "/api" })
   .use(authGuard)
+  .use(makeMeResolver())
   .use(makeUsersPlugin(testDb, allowRoles));
 
 async function seedUser(username: string) {
@@ -187,6 +189,41 @@ describe("Users API", () => {
 
       const res = await patchUser(user.userId, { username: "new" }, token);
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe("me alias", () => {
+    it("GET /api/users/me returns own profile with valid auth", async () => {
+      const user = await seedUser("alice");
+      const token = await makeAuthToken(user.userId, "alice");
+
+      const res = await getUser("me", token);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.userId).toBe(user.userId);
+      expect(body.username).toBe("alice");
+    });
+
+    it("GET /api/users/me returns 401 without auth", async () => {
+      const res = await getUser("me");
+      expect(res.status).toBe(401);
+    });
+
+    it("PATCH /api/users/me updates own profile with valid auth", async () => {
+      const user = await seedUser("old-name");
+      const token = await makeAuthToken(user.userId, "old-name");
+
+      const res = await patchUser("me", { username: "new-name" }, token);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.username).toBe("new-name");
+    });
+
+    it("PATCH /api/users/me returns 401 without auth", async () => {
+      const res = await patchUser("me", { username: "new-name" });
+      expect(res.status).toBe(401);
     });
   });
 });

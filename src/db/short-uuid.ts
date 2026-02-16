@@ -69,3 +69,6 @@ export const shortUuid = customType<{ data: string; driverData: string }>({
 
 export const SHORT_UUID_PATTERN =
   "^([2-9A-HJ-NP-Za-km-z]{22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$";
+
+export const ME_OR_SHORT_UUID_PATTERN =
+  "^(me|[2-9A-HJ-NP-Za-km-z]{22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$";

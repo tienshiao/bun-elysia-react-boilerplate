@@ -107,6 +107,7 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
 
 export type { AuthUser } from "./guard.ts";
 export { makeAuthGuard } from "./guard.ts";
+export { makeMeResolver } from "./me-resolver.ts";
 export type { AllowRoles, RoleClass, RoleContext } from "./roles.ts";
 export {
   AdminRole,
