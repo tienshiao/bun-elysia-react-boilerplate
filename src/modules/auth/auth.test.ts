@@ -1,17 +1,19 @@
 import { describe, expect, it, beforeAll, beforeEach } from 'bun:test';
 import { Elysia, t } from 'elysia';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import * as schema from '@/db/schema/index.ts';
-import { authPlugin, authGuard } from './index.ts';
+import { loadConfig } from '@/config.ts';
+import { makeDb } from '@/db/index.ts';
+import { makeJwt } from './jwt.ts';
+import { makeAuthPlugin, makeAuthGuard } from './index.ts';
 
-const testClient = postgres(process.env.DATABASE_URL!);
-const testDb = drizzle(testClient, { schema });
+const config = await loadConfig();
+const { db: testDb } = makeDb(config.db);
+const jwt = await makeJwt(config.jwt);
+const authGuard = await makeAuthGuard(config.jwt);
 
 const testApp = new Elysia()
-  .use(authPlugin)
+  .use(makeAuthPlugin(testDb, jwt))
   .use(authGuard)
   .get('/api/me', ({ user }) => {
     return { userId: user!.userId, username: user!.username };

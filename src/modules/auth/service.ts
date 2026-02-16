@@ -2,9 +2,7 @@ import { eq, isNull, and } from 'drizzle-orm';
 import { users, usersPrivate, refreshTokens } from '@/db/schema/index.ts';
 import { AUTH_CONFIG, TOKEN_TYPES } from './config.ts';
 import type { Database } from '@/db/index.ts';
-
-type JwtSigner = { sign(payload: Record<string, unknown>): Promise<string> };
-type JwtVerifier = { verify(token: string): Promise<Record<string, unknown> | false> };
+import type { Jwt } from './jwt.ts';
 
 class ConflictError extends Error {
   constructor(message: string) {
@@ -16,24 +14,26 @@ function isUniqueViolation(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === '23505';
 }
 
-export abstract class AuthService {
+export class AuthService {
+  constructor(private db: Database, private jwt: Jwt) {}
+
   static async hashRefreshToken(token: string): Promise<string> {
     const encoded = new TextEncoder().encode(token);
     const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
     return Buffer.from(hashBuffer).toString('hex');
   }
 
-  private static async generateAndStoreRefreshToken(db: Database, jwt: JwtSigner, userId: string) {
-    const rawToken = await jwt.sign({
+  private async generateAndStoreRefreshToken(userId: string) {
+    const rawToken = await this.jwt.sign({
       sub: userId,
       tt: TOKEN_TYPES.refresh,
       exp: `${AUTH_CONFIG.refreshTokenTTL}s`,
       jti: crypto.randomUUID(),
     });
-    const tokenHash = await this.hashRefreshToken(rawToken);
+    const tokenHash = await AuthService.hashRefreshToken(rawToken);
     const expiresAt = new Date(Date.now() + AUTH_CONFIG.refreshTokenTTL * 1000);
 
-    await db.insert(refreshTokens).values({
+    await this.db.insert(refreshTokens).values({
       tokenHash,
       expiresAt,
       userId,
@@ -42,17 +42,13 @@ export abstract class AuthService {
     return rawToken;
   }
 
-  static async signUp(
-    db: Database,
-    jwt: JwtSigner,
-    body: { email: string; password: string; username: string },
-  ) {
+  async signUp(body: { email: string; password: string; username: string }) {
     const { email, password, username } = body;
     const passwordHash = await Bun.password.hash(password, 'argon2id');
 
     let newUserId: string;
     try {
-      newUserId = await db.transaction(async (tx) => {
+      newUserId = await this.db.transaction(async (tx) => {
         const existingEmail = await tx
           .select({ userId: usersPrivate.userId })
           .from(usersPrivate)
@@ -93,8 +89,8 @@ export abstract class AuthService {
       throw err;
     }
 
-    const authToken = await jwt.sign({ sub: newUserId, username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
-    const refreshToken = await this.generateAndStoreRefreshToken(db, jwt, newUserId);
+    const authToken = await this.jwt.sign({ sub: newUserId, username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const refreshToken = await this.generateAndStoreRefreshToken(newUserId);
 
     return {
       status: 201 as const,
@@ -106,14 +102,10 @@ export abstract class AuthService {
     };
   }
 
-  static async signIn(
-    db: Database,
-    jwt: JwtSigner,
-    body: { email: string; password: string },
-  ) {
+  async signIn(body: { email: string; password: string }) {
     const { email, password } = body;
 
-    const result = await db
+    const result = await this.db
       .select({
         userId: users.userId,
         username: users.username,
@@ -136,8 +128,8 @@ export abstract class AuthService {
       return { status: 401 as const, data: { error: 'Invalid credentials' } };
     }
 
-    const authToken = await jwt.sign({ sub: user.userId, username: user.username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
-    const refreshToken = await this.generateAndStoreRefreshToken(db, jwt, user.userId);
+    const authToken = await this.jwt.sign({ sub: user.userId, username: user.username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const refreshToken = await this.generateAndStoreRefreshToken(user.userId);
 
     return {
       status: 200 as const,
@@ -149,29 +141,21 @@ export abstract class AuthService {
     };
   }
 
-  static async signOut(
-    db: Database,
-    body: { refreshToken: string },
-  ) {
-    const tokenHash = await this.hashRefreshToken(body.refreshToken);
-    await db.delete(refreshTokens).where(eq(refreshTokens.tokenHash, tokenHash));
+  async signOut(body: { refreshToken: string }) {
+    const tokenHash = await AuthService.hashRefreshToken(body.refreshToken);
+    await this.db.delete(refreshTokens).where(eq(refreshTokens.tokenHash, tokenHash));
     return { status: 200 as const, data: { success: true } };
   }
 
-  static async refresh(
-    db: Database,
-    jwt: JwtSigner,
-    jwtVerify: JwtVerifier,
-    body: { refreshToken: string },
-  ) {
-    const refreshPayload = await jwtVerify.verify(body.refreshToken);
+  async refresh(body: { refreshToken: string }) {
+    const refreshPayload = await this.jwt.verify(body.refreshToken);
     if (!refreshPayload || refreshPayload.tt !== TOKEN_TYPES.refresh) {
       return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
     }
 
-    const tokenHash = await this.hashRefreshToken(body.refreshToken);
+    const tokenHash = await AuthService.hashRefreshToken(body.refreshToken);
 
-    const result = await db
+    const result = await this.db
       .select()
       .from(refreshTokens)
       .where(eq(refreshTokens.tokenHash, tokenHash))
@@ -181,12 +165,12 @@ export abstract class AuthService {
 
     if (!stored || stored.expiresAt < new Date()) {
       if (stored) {
-        await db.delete(refreshTokens).where(eq(refreshTokens.id, stored.id));
+        await this.db.delete(refreshTokens).where(eq(refreshTokens.id, stored.id));
       }
       return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
     }
 
-    const userResult = await db
+    const userResult = await this.db
       .select({ userId: users.userId, username: users.username })
       .from(users)
       .where(and(eq(users.userId, stored.userId), isNull(users.deletedAt)))
@@ -197,12 +181,12 @@ export abstract class AuthService {
       return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
     }
 
-    const authToken = await jwt.sign({ sub: user.userId, username: user.username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const authToken = await this.jwt.sign({ sub: user.userId, username: user.username, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
     const remainingSeconds = (stored.expiresAt.getTime() - Date.now()) / 1000;
 
     if (remainingSeconds < AUTH_CONFIG.refreshRenewThreshold) {
-      await db.delete(refreshTokens).where(eq(refreshTokens.id, stored.id));
-      const newRefreshToken = await this.generateAndStoreRefreshToken(db, jwt, user.userId);
+      await this.db.delete(refreshTokens).where(eq(refreshTokens.id, stored.id));
+      const newRefreshToken = await this.generateAndStoreRefreshToken(user.userId);
       return { status: 200 as const, data: { authToken, refreshToken: newRefreshToken } };
     }
 

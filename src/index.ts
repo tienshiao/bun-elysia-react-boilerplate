@@ -2,12 +2,19 @@ import { createPinoLogger } from "@bogeychan/elysia-logger";
 import { openapi, fromTypes } from "@elysiajs/openapi";
 import { Elysia, type Context } from "elysia";
 import { helmet } from 'elysia-helmet';
-import { authPlugin } from '@/modules/auth/index.ts';
+import { loadConfig } from '@/config.ts';
+import { makeDb } from '@/db/index.ts';
+import { makeJwt } from '@/modules/auth/jwt.ts';
+import { makeAuthPlugin } from '@/modules/auth/index.ts';
 
 import index from './frontend/index.html'
 
 declare const __VERSION__: string | undefined;
 declare const __GIT_HASH__: string | undefined;
+
+const config = await loadConfig();
+const { db } = makeDb(config.db);
+const jwt = await makeJwt(config.jwt);
 
 const log = createPinoLogger();
 
@@ -48,11 +55,11 @@ export const app = new Elysia()
       ? `${__VERSION__} (${__GIT_HASH__})`
       : 'dev';
   })
-  .use(authPlugin)
+  .use(makeAuthPlugin(db, jwt))
   .get(spaPath, index)
 	.get('/message', { message: 'Hello from server' } as const)
 	.get('/*', spaProxy)
-	.listen(4000)
+	.listen(config.server.port)
 
 export type App = typeof app;
 
