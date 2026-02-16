@@ -1,7 +1,6 @@
 // build-all.ts
-import { build, $ } from "bun";
+import { $, build } from "bun";
 import tailwind from "bun-plugin-tailwind";
-
 // Generate route tree before building
 import * as fs from "fs";
 import * as path from "path";

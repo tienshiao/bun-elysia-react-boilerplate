@@ -1,5 +1,6 @@
-import type { AuthUser } from "./guard.ts";
 import { toShortUuid } from "@/db/short-uuid.ts";
+
+import type { AuthUser } from "./guard.ts";
 
 export interface RoleContext {
   user: AuthUser | null;

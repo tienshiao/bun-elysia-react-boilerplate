@@ -1,9 +1,11 @@
 import { Elysia, t } from "elysia";
-import { UserService } from "./service.ts";
+
 import type { Database } from "@/db/index.ts";
 import { SHORT_UUID_PATTERN } from "@/db/short-uuid.ts";
-import { AuthenticatedRole, AdminRole, UserOwnerRole } from "@/modules/auth/roles.ts";
 import type { AllowRoles } from "@/modules/auth/roles.ts";
+import { AdminRole, AuthenticatedRole, UserOwnerRole } from "@/modules/auth/roles.ts";
+
+import { UserService } from "./service.ts";
 
 const userResponseSchema = t.Object({
   userId: t.String(),

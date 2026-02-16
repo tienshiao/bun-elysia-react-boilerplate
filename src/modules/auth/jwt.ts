@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify, importPKCS8, importSPKI, type KeyLike } from "jose";
+import { importPKCS8, importSPKI, jwtVerify, type KeyLike, SignJWT } from "jose";
 
 export interface Jwt {
   sign(payload: Record<string, unknown>): Promise<string>;

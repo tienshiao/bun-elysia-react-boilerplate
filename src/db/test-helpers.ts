@@ -1,8 +1,10 @@
+import { readdir } from "node:fs/promises";
+
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { readdir } from "node:fs/promises";
-import * as schema from "./schema/index.ts";
+
 import type { Database } from "./index.ts";
+import * as schema from "./schema/index.ts";
 
 export async function makeTestDb(
   dbConfig: { url: string },

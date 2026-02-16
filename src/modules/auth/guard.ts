@@ -1,8 +1,10 @@
-import { Elysia } from "elysia";
 import { bearer } from "@elysiajs/bearer";
-import type { Jwt } from "./jwt.ts";
-import { TOKEN_TYPES } from "./config.ts";
+import { Elysia } from "elysia";
+
 import { toShortUuid } from "@/db/short-uuid.ts";
+
+import { TOKEN_TYPES } from "./config.ts";
+import type { Jwt } from "./jwt.ts";
 
 export interface AuthUser {
   userId: string;

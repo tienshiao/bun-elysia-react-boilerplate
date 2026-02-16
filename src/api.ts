@@ -1,10 +1,11 @@
 import { Elysia } from "elysia";
+
+import type { AppConfig } from "@/config.ts";
 import { makeDb } from "@/db/index.ts";
+import { makeAuthGuard, makeAuthPlugin } from "@/modules/auth/index.ts";
 import { makeJwt } from "@/modules/auth/jwt.ts";
-import { makeAuthPlugin, makeAuthGuard } from "@/modules/auth/index.ts";
 import { makeAllowRoles } from "@/modules/auth/roles.ts";
 import { makeUsersPlugin } from "@/modules/users/index.ts";
-import type { AppConfig } from "@/config.ts";
 
 export async function makeApiPlugin(config: AppConfig) {
   const { db } = makeDb(config.db);

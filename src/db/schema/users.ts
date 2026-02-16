@@ -1,5 +1,6 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
 import { shortUuid } from "@/db/short-uuid.ts";
 
 export const users = pgTable("users", {

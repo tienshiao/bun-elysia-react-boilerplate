@@ -1,10 +1,11 @@
 import { describe, expect, it } from "bun:test";
+
 import {
-  uuidToShort,
-  shortToUuid,
-  toStandardUuid,
-  toShortUuid,
   isStandardUuid,
+  shortToUuid,
+  toShortUuid,
+  toStandardUuid,
+  uuidToShort,
 } from "./short-uuid.ts";
 
 describe("short-uuid", () => {

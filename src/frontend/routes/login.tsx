@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+
 import { Button } from "@/frontend/components/ui/button";
-import { Input } from "@/frontend/components/ui/input";
-import { Label } from "@/frontend/components/ui/label";
 import {
   Card,
   CardContent,
@@ -9,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/frontend/components/ui/card";
+import { Input } from "@/frontend/components/ui/input";
+import { Label } from "@/frontend/components/ui/label";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => ({

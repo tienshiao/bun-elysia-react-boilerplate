@@ -1,6 +1,8 @@
-import { pgTable, primaryKey, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { pgTable, primaryKey, text } from "drizzle-orm/pg-core";
+
 import { shortUuid } from "@/db/short-uuid.ts";
+
 import { users } from "./users.ts";
 
 export const roles = pgTable("roles", {

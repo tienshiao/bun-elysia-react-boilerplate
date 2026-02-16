@@ -1,7 +1,8 @@
-import { eq, and, isNull } from "drizzle-orm";
-import { users } from "@/db/schema/index.ts";
-import type { Database } from "@/db/index.ts";
+import { and, eq, isNull } from "drizzle-orm";
+
 import { isUniqueViolation } from "@/db/errors.ts";
+import type { Database } from "@/db/index.ts";
+import { users } from "@/db/schema/index.ts";
 
 export class UserService {
   constructor(private db: Database) {}

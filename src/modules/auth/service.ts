@@ -1,8 +1,10 @@
-import { eq, isNull, and } from "drizzle-orm";
-import { users, usersPrivate, refreshTokens, roles, userRoles } from "@/db/schema/index.ts";
-import { AUTH_CONFIG, TOKEN_TYPES } from "./config.ts";
-import type { Database } from "@/db/index.ts";
+import { and, eq, isNull } from "drizzle-orm";
+
 import { isUniqueViolation } from "@/db/errors.ts";
+import type { Database } from "@/db/index.ts";
+import { refreshTokens, roles, userRoles, users, usersPrivate } from "@/db/schema/index.ts";
+
+import { AUTH_CONFIG, TOKEN_TYPES } from "./config.ts";
 import type { Jwt } from "./jwt.ts";
 
 class ConflictError extends Error {

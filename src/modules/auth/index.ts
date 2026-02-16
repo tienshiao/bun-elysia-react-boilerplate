@@ -1,7 +1,9 @@
 import { Elysia, t } from "elysia";
-import { AuthService } from "./service.ts";
+
 import type { Database } from "@/db/index.ts";
+
 import type { Jwt } from "./jwt.ts";
+import { AuthService } from "./service.ts";
 
 const authResponseSchema = t.Object({
   authToken: t.String(),
@@ -103,13 +105,13 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
     );
 }
 
+export type { AuthUser } from "./guard.ts";
 export { makeAuthGuard } from "./guard.ts";
+export type { AllowRoles, RoleClass, RoleContext } from "./roles.ts";
 export {
-  makeAllowRoles,
-  EveryoneRole,
-  AuthenticatedRole,
   AdminRole,
+  AuthenticatedRole,
+  EveryoneRole,
+  makeAllowRoles,
   UserOwnerRole,
 } from "./roles.ts";
-export type { RoleClass, RoleContext, AllowRoles } from "./roles.ts";
-export type { AuthUser } from "./guard.ts";

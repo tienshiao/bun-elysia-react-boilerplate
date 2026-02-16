@@ -1,9 +1,10 @@
 import { createPinoLogger } from "@bogeychan/elysia-logger";
-import { openapi, fromTypes } from "@elysiajs/openapi";
-import { Elysia, type Context } from "elysia";
+import { fromTypes, openapi } from "@elysiajs/openapi";
+import { type Context, Elysia } from "elysia";
 import { helmet } from "elysia-helmet";
-import { loadConfig } from "@/config.ts";
+
 import { makeApiPlugin } from "@/api.ts";
+import { loadConfig } from "@/config.ts";
 
 import index from "./frontend/index.html";
 

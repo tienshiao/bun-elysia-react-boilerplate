@@ -1,13 +1,15 @@
-import { describe, expect, it, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
+import { eq, sql } from "drizzle-orm";
 import { Elysia } from "elysia";
-import { sql, eq } from "drizzle-orm";
+
 import { loadConfig } from "@/config.ts";
-import { makeTestDb } from "@/db/test-helpers.ts";
 import { users } from "@/db/schema/index.ts";
-import { makeJwt } from "@/modules/auth/jwt.ts";
-import { makeAuthGuard } from "@/modules/auth/guard.ts";
-import { makeAllowRoles } from "@/modules/auth/roles.ts";
+import { makeTestDb } from "@/db/test-helpers.ts";
 import { AUTH_CONFIG, TOKEN_TYPES } from "@/modules/auth/config.ts";
+import { makeAuthGuard } from "@/modules/auth/guard.ts";
+import { makeJwt } from "@/modules/auth/jwt.ts";
+import { makeAllowRoles } from "@/modules/auth/roles.ts";
+
 import { makeUsersPlugin } from "./index.ts";
 
 const config = await loadConfig();

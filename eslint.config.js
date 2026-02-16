@@ -1,8 +1,9 @@
 import js from "@eslint/js";
-import tseslint from "typescript-eslint";
+import prettier from "eslint-config-prettier";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import prettier from "eslint-config-prettier";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
@@ -19,7 +20,12 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   {
+    plugins: {
+      "simple-import-sort": simpleImportSort,
+    },
     rules: {
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
@@ -36,6 +42,13 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+    },
+  },
+
+  {
+    files: ["src/frontend/routes/**/*.{ts,tsx}", "src/frontend/components/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
 
