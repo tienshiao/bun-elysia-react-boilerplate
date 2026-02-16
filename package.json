@@ -8,7 +8,13 @@
     "build:server:all": "bun run build-all.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "check": "prettier --check . && eslint .",
+    "fix": "prettier --write . && eslint . --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.1.10",
@@ -32,13 +38,20 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tanstack/react-router-devtools": "^1.159.9",
     "@tanstack/router-cli": "^1.159.9",
     "@types/bun": "latest",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "bun-plugin-tailwind": "^0.1.2",
-    "drizzle-kit": "^0.31.9"
+    "drizzle-kit": "^0.31.9",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.0",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.0"
   },
   "module": "src/index.js"
 }

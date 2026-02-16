@@ -37,7 +37,7 @@ await build({
   minify: {
     whitespace: true,
     syntax: true,
-  }
+  },
 });
 
 console.log(`Built ${outdir}/${outfile}`);

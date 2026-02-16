@@ -12,9 +12,19 @@ const outfile = "server";
 
 const platforms = [
   { platform: "darwin", arch: "x64", target: "bun-darwin-x64", outfile: `${outfile}-macos-x64` },
-  { platform: "darwin", arch: "arm64", target: "bun-darwin-arm64", outfile: `${outfile}-macos-arm64` },
+  {
+    platform: "darwin",
+    arch: "arm64",
+    target: "bun-darwin-arm64",
+    outfile: `${outfile}-macos-arm64`,
+  },
   { platform: "linux", arch: "x64", target: "bun-linux-x64", outfile: `${outfile}-linux-x64` },
-  { platform: "win", arch: "x64", target: "bun-windows-x64", outfile: `${outfile}-windows-x64.exe` },
+  {
+    platform: "win",
+    arch: "x64",
+    target: "bun-windows-x64",
+    outfile: `${outfile}-windows-x64.exe`,
+  },
 ];
 
 // Generate route tree before building
@@ -42,6 +52,7 @@ for (const platform of platforms) {
     await build({
       entrypoints: [entrypoint],
       compile: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         target: platform.target as any,
         outfile: platform.outfile,
       },

@@ -1,10 +1,13 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { readdir } from 'node:fs/promises';
-import * as schema from './schema/index.ts';
-import type { Database } from './index.ts';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { readdir } from "node:fs/promises";
+import * as schema from "./schema/index.ts";
+import type { Database } from "./index.ts";
 
-export async function makeTestDb(dbConfig: { url: string }, schemaName: string): Promise<{
+export async function makeTestDb(
+  dbConfig: { url: string },
+  schemaName: string,
+): Promise<{
   db: Database;
   client: postgres.Sql;
   cleanup: () => Promise<void>;
@@ -25,17 +28,17 @@ export async function makeTestDb(dbConfig: { url: string }, schemaName: string):
   });
 
   // 3. Read migration SQL files, strip "public". qualifiers, and execute
-  const migrationsDir = './drizzle';
+  const migrationsDir = "./drizzle";
   const sqlFiles: string[] = [];
   for (const entry of await readdir(migrationsDir)) {
-    if (entry.endsWith('.sql')) sqlFiles.push(entry);
+    if (entry.endsWith(".sql")) sqlFiles.push(entry);
   }
   sqlFiles.sort();
 
   for (const sqlFile of sqlFiles) {
     const content = await Bun.file(`${migrationsDir}/${sqlFile}`).text();
-    const patched = content.replace(/"public"\./g, '');
-    const statements = patched.split('--> statement-breakpoint');
+    const patched = content.replace(/"public"\./g, "");
+    const statements = patched.split("--> statement-breakpoint");
     for (const stmt of statements) {
       const trimmed = stmt.trim();
       if (trimmed) await client.unsafe(trimmed);

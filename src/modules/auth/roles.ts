@@ -1,5 +1,5 @@
-import type { AuthUser } from './guard.ts';
-import { toShortUuid } from '@/db/short-uuid.ts';
+import type { AuthUser } from "./guard.ts";
+import { toShortUuid } from "@/db/short-uuid.ts";
 
 export interface RoleContext {
   user: AuthUser | null;
@@ -7,14 +7,16 @@ export interface RoleContext {
 }
 
 export abstract class Role {
-  static resolve(ctx: RoleContext): boolean {
-    throw new Error('Role.resolve() must be implemented');
+  static resolve(_ctx: RoleContext): boolean {
+    throw new Error("Role.resolve() must be implemented");
   }
 }
 
 export type RoleClass = typeof Role;
 
-export type AllowRoles = (...roles: RoleClass[]) => { beforeHandle: (ctx: { user: AuthUser | null; params: Record<string, string> }) => Response | void };
+export type AllowRoles = (...roles: RoleClass[]) => {
+  beforeHandle: (ctx: { user: AuthUser | null; params: Record<string, string> }) => Response | void;
+};
 
 export class EveryoneRole extends Role {
   static resolve(_ctx: RoleContext): boolean {
@@ -30,7 +32,7 @@ export class AuthenticatedRole extends Role {
 
 export class AdminRole extends Role {
   static resolve(ctx: RoleContext): boolean {
-    return ctx.user?.roles.includes('admin') ?? false;
+    return ctx.user?.roles.includes("admin") ?? false;
   }
 }
 
@@ -54,9 +56,9 @@ export function makeAllowRoles(): AllowRoles {
           }
         }
 
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         });
       },
     };

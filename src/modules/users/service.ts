@@ -1,7 +1,7 @@
-import { eq, and, isNull } from 'drizzle-orm';
-import { users } from '@/db/schema/index.ts';
-import type { Database } from '@/db/index.ts';
-import { isUniqueViolation } from '@/db/errors.ts';
+import { eq, and, isNull } from "drizzle-orm";
+import { users } from "@/db/schema/index.ts";
+import type { Database } from "@/db/index.ts";
+import { isUniqueViolation } from "@/db/errors.ts";
 
 export class UserService {
   constructor(private db: Database) {}
@@ -19,12 +19,16 @@ export class UserService {
 
     const user = result[0];
     if (!user) {
-      return { status: 404 as const, data: { error: 'User not found' } };
+      return { status: 404 as const, data: { error: "User not found" } };
     }
 
     return {
       status: 200 as const,
-      data: { userId: user.userId, username: user.username, createdAt: user.createdAt.toISOString() },
+      data: {
+        userId: user.userId,
+        username: user.username,
+        createdAt: user.createdAt.toISOString(),
+      },
     };
   }
 
@@ -36,7 +40,7 @@ export class UserService {
       .limit(1);
 
     if (existing.length === 0) {
-      return { status: 404 as const, data: { error: 'User not found' } };
+      return { status: 404 as const, data: { error: "User not found" } };
     }
 
     try {
@@ -52,11 +56,15 @@ export class UserService {
 
       return {
         status: 200 as const,
-        data: { userId: updated!.userId, username: updated!.username, createdAt: updated!.createdAt.toISOString() },
+        data: {
+          userId: updated!.userId,
+          username: updated!.username,
+          createdAt: updated!.createdAt.toISOString(),
+        },
       };
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return { status: 409 as const, data: { error: 'Username already taken' } };
+        return { status: 409 as const, data: { error: "Username already taken" } };
       }
       throw err;
     }

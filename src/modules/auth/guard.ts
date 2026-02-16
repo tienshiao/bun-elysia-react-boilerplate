@@ -1,8 +1,8 @@
-import { Elysia } from 'elysia';
-import { bearer } from '@elysiajs/bearer';
-import type { Jwt } from './jwt.ts';
-import { TOKEN_TYPES } from './config.ts';
-import { toShortUuid } from '@/db/short-uuid.ts';
+import { Elysia } from "elysia";
+import { bearer } from "@elysiajs/bearer";
+import type { Jwt } from "./jwt.ts";
+import { TOKEN_TYPES } from "./config.ts";
+import { toShortUuid } from "@/db/short-uuid.ts";
 
 export interface AuthUser {
   userId: string;
@@ -11,7 +11,7 @@ export interface AuthUser {
 }
 
 export function makeAuthGuard(jwt: Jwt) {
-  return new Elysia({ name: 'auth-guard' })
+  return new Elysia({ name: "auth-guard" })
     .use(bearer())
     .resolve(async ({ bearer }) => {
       if (!bearer) {
@@ -29,5 +29,5 @@ export function makeAuthGuard(jwt: Jwt) {
         } as AuthUser | null,
       };
     })
-    .as('plugin');
+    .as("plugin");
 }

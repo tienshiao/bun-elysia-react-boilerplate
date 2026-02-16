@@ -1,0 +1,7 @@
+node_modules
+dist-executables
+.tanstack
+drizzle
+docker-data
+*.gen.ts
+bun.lock

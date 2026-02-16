@@ -1,9 +1,9 @@
-import { eq, isNull, and } from 'drizzle-orm';
-import { users, usersPrivate, refreshTokens, roles, userRoles } from '@/db/schema/index.ts';
-import { AUTH_CONFIG, TOKEN_TYPES } from './config.ts';
-import type { Database } from '@/db/index.ts';
-import { isUniqueViolation } from '@/db/errors.ts';
-import type { Jwt } from './jwt.ts';
+import { eq, isNull, and } from "drizzle-orm";
+import { users, usersPrivate, refreshTokens, roles, userRoles } from "@/db/schema/index.ts";
+import { AUTH_CONFIG, TOKEN_TYPES } from "./config.ts";
+import type { Database } from "@/db/index.ts";
+import { isUniqueViolation } from "@/db/errors.ts";
+import type { Jwt } from "./jwt.ts";
 
 class ConflictError extends Error {
   constructor(message: string) {
@@ -12,12 +12,15 @@ class ConflictError extends Error {
 }
 
 export class AuthService {
-  constructor(private db: Database, private jwt: Jwt) {}
+  constructor(
+    private db: Database,
+    private jwt: Jwt,
+  ) {}
 
   static async hashRefreshToken(token: string): Promise<string> {
     const encoded = new TextEncoder().encode(token);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
-    return Buffer.from(hashBuffer).toString('hex');
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+    return Buffer.from(hashBuffer).toString("hex");
   }
 
   private async getUserRoles(userId: string): Promise<string[]> {
@@ -50,7 +53,7 @@ export class AuthService {
 
   async signUp(body: { email: string; password: string; username: string }) {
     const { email, password, username } = body;
-    const passwordHash = await Bun.password.hash(password, 'argon2id');
+    const passwordHash = await Bun.password.hash(password, "argon2id");
 
     let newUserId: string;
     try {
@@ -62,7 +65,7 @@ export class AuthService {
           .limit(1);
 
         if (existingEmail.length > 0) {
-          throw new ConflictError('Email already taken');
+          throw new ConflictError("Email already taken");
         }
 
         const existingUsername = await tx
@@ -72,7 +75,7 @@ export class AuthService {
           .limit(1);
 
         if (existingUsername.length > 0) {
-          throw new ConflictError('Username already taken');
+          throw new ConflictError("Username already taken");
         }
 
         const [newUser] = await tx.insert(users).values({ username }).returning();
@@ -89,14 +92,22 @@ export class AuthService {
         return { status: 409 as const, data: { error: err.message } };
       }
       if (isUniqueViolation(err)) {
-        const message = String(err).includes('email') ? 'Email already taken' : 'Username already taken';
+        const message = String(err).includes("email")
+          ? "Email already taken"
+          : "Username already taken";
         return { status: 409 as const, data: { error: message } };
       }
       throw err;
     }
 
     const userRoles = await this.getUserRoles(newUserId);
-    const authToken = await this.jwt.sign({ sub: newUserId, username, roles: userRoles, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const authToken = await this.jwt.sign({
+      sub: newUserId,
+      username,
+      roles: userRoles,
+      tt: TOKEN_TYPES.auth,
+      exp: `${AUTH_CONFIG.authTokenTTL}s`,
+    });
     const refreshToken = await this.generateAndStoreRefreshToken(newUserId);
 
     return {
@@ -127,16 +138,22 @@ export class AuthService {
     const user = result[0];
 
     if (!user || user.deletedAt !== null) {
-      return { status: 401 as const, data: { error: 'Invalid credentials' } };
+      return { status: 401 as const, data: { error: "Invalid credentials" } };
     }
 
     const valid = await Bun.password.verify(password, user.passwordHash);
     if (!valid) {
-      return { status: 401 as const, data: { error: 'Invalid credentials' } };
+      return { status: 401 as const, data: { error: "Invalid credentials" } };
     }
 
     const userRoles = await this.getUserRoles(user.userId);
-    const authToken = await this.jwt.sign({ sub: user.userId, username: user.username, roles: userRoles, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const authToken = await this.jwt.sign({
+      sub: user.userId,
+      username: user.username,
+      roles: userRoles,
+      tt: TOKEN_TYPES.auth,
+      exp: `${AUTH_CONFIG.authTokenTTL}s`,
+    });
     const refreshToken = await this.generateAndStoreRefreshToken(user.userId);
 
     return {
@@ -158,7 +175,7 @@ export class AuthService {
   async refresh(body: { refreshToken: string }) {
     const refreshPayload = await this.jwt.verify(body.refreshToken);
     if (!refreshPayload || refreshPayload.tt !== TOKEN_TYPES.refresh) {
-      return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
+      return { status: 401 as const, data: { error: "Invalid or expired refresh token" } };
     }
 
     const tokenHash = await AuthService.hashRefreshToken(body.refreshToken);
@@ -175,7 +192,7 @@ export class AuthService {
       if (stored) {
         await this.db.delete(refreshTokens).where(eq(refreshTokens.id, stored.id));
       }
-      return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
+      return { status: 401 as const, data: { error: "Invalid or expired refresh token" } };
     }
 
     const userResult = await this.db
@@ -186,11 +203,17 @@ export class AuthService {
 
     const user = userResult[0];
     if (!user) {
-      return { status: 401 as const, data: { error: 'Invalid or expired refresh token' } };
+      return { status: 401 as const, data: { error: "Invalid or expired refresh token" } };
     }
 
     const userRoles = await this.getUserRoles(user.userId);
-    const authToken = await this.jwt.sign({ sub: user.userId, username: user.username, roles: userRoles, tt: TOKEN_TYPES.auth, exp: `${AUTH_CONFIG.authTokenTTL}s` });
+    const authToken = await this.jwt.sign({
+      sub: user.userId,
+      username: user.username,
+      roles: userRoles,
+      tt: TOKEN_TYPES.auth,
+      exp: `${AUTH_CONFIG.authTokenTTL}s`,
+    });
     const remainingSeconds = (stored.expiresAt.getTime() - Date.now()) / 1000;
 
     if (remainingSeconds < AUTH_CONFIG.refreshRenewThreshold) {

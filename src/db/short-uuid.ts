@@ -1,6 +1,6 @@
-import { customType } from 'drizzle-orm/pg-core';
+import { customType } from "drizzle-orm/pg-core";
 
-const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const BASE = BigInt(ALPHABET.length); // 57
 const SHORT_LEN = 22;
 
@@ -16,8 +16,8 @@ export function isStandardUuid(s: string): boolean {
 }
 
 export function uuidToShort(uuid: string): string {
-  const hex = uuid.replace(/-/g, '');
-  let num = BigInt('0x' + hex);
+  const hex = uuid.replace(/-/g, "");
+  let num = BigInt("0x" + hex);
   const chars: string[] = [];
   while (num > 0n) {
     chars.push(ALPHABET[Number(num % BASE)]!);
@@ -27,7 +27,7 @@ export function uuidToShort(uuid: string): string {
   while (chars.length < SHORT_LEN) {
     chars.push(ALPHABET[0]!);
   }
-  return chars.reverse().join('');
+  return chars.reverse().join("");
 }
 
 export function shortToUuid(short: string): string {
@@ -37,14 +37,14 @@ export function shortToUuid(short: string): string {
     if (val === undefined) throw new Error(`Invalid short UUID character: ${ch}`);
     num = num * BASE + val;
   }
-  const hex = num.toString(16).padStart(32, '0');
+  const hex = num.toString(16).padStart(32, "0");
   return [
     hex.slice(0, 8),
     hex.slice(8, 12),
     hex.slice(12, 16),
     hex.slice(16, 20),
     hex.slice(20, 32),
-  ].join('-');
+  ].join("-");
 }
 
 export function toStandardUuid(s: string): string {
@@ -57,7 +57,7 @@ export function toShortUuid(s: string): string {
 
 export const shortUuid = customType<{ data: string; driverData: string }>({
   dataType() {
-    return 'uuid';
+    return "uuid";
   },
   fromDriver(value: string): string {
     return uuidToShort(value);
@@ -68,4 +68,4 @@ export const shortUuid = customType<{ data: string; driverData: string }>({
 });
 
 export const SHORT_UUID_PATTERN =
-  '^([2-9A-HJ-NP-Za-km-z]{22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$';
+  "^([2-9A-HJ-NP-Za-km-z]{22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$";

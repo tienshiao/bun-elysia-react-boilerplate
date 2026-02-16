@@ -31,20 +31,13 @@ function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>
-            Enter your credentials to continue
-          </CardDescription>
+          <CardDescription>Enter your credentials to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                required
-              />
+              <Input id="email" type="email" placeholder="you@example.com" required />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
