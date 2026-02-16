@@ -11,8 +11,11 @@ const { db: testDb } = await makeTestDb(config.db, 'auth');
 const jwt = await makeJwt(config.jwt);
 const authGuard = await makeAuthGuard(config.jwt);
 
+const apiPlugin = new Elysia({ prefix: '/api' })
+  .use(makeAuthPlugin(testDb, jwt));
+
 const testApp = new Elysia()
-  .use(makeAuthPlugin(testDb, jwt))
+  .use(apiPlugin)
   .use(authGuard)
   .get('/api/me', ({ user }) => {
     return { userId: user!.userId, username: user!.username };
@@ -25,7 +28,7 @@ const testApp = new Elysia()
 
 async function signUp(email: string, password: string, username: string) {
   return testApp.handle(
-    new Request('http://localhost/auth/sign-up', {
+    new Request('http://localhost/api/auth/sign-up', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, username }),
@@ -35,7 +38,7 @@ async function signUp(email: string, password: string, username: string) {
 
 async function signIn(email: string, password: string) {
   return testApp.handle(
-    new Request('http://localhost/auth/sign-in', {
+    new Request('http://localhost/api/auth/sign-in', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -45,7 +48,7 @@ async function signIn(email: string, password: string) {
 
 async function signOut(refreshToken: string) {
   return testApp.handle(
-    new Request('http://localhost/auth/sign-out', {
+    new Request('http://localhost/api/auth/sign-out', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -55,7 +58,7 @@ async function signOut(refreshToken: string) {
 
 async function refresh(refreshToken: string) {
   return testApp.handle(
-    new Request('http://localhost/auth/refresh', {
+    new Request('http://localhost/api/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -79,7 +82,7 @@ beforeEach(async () => {
 });
 
 describe('Auth API', () => {
-  describe('POST /auth/sign-up', () => {
+  describe('POST /api/auth/sign-up', () => {
     it('creates user and returns both tokens', async () => {
       const res = await signUp('test@test.com', 'password123', 'testuser');
       expect(res.status).toBe(201);
@@ -122,7 +125,7 @@ describe('Auth API', () => {
     });
   });
 
-  describe('POST /auth/sign-in', () => {
+  describe('POST /api/auth/sign-in', () => {
     it('returns both tokens for valid credentials', async () => {
       await signUp('test@test.com', 'password123', 'testuser');
 
@@ -156,7 +159,7 @@ describe('Auth API', () => {
     });
   });
 
-  describe('POST /auth/sign-out', () => {
+  describe('POST /api/auth/sign-out', () => {
     it('deletes refresh token from DB', async () => {
       const signUpRes = await signUp('test@test.com', 'password123', 'testuser');
       const { refreshToken } = await signUpRes.json();
@@ -180,7 +183,7 @@ describe('Auth API', () => {
     });
   });
 
-  describe('POST /auth/refresh', () => {
+  describe('POST /api/auth/refresh', () => {
     it('returns new auth_token with same refresh_token when TTL is plenty', async () => {
       const signUpRes = await signUp('test@test.com', 'password123', 'testuser');
       const { refreshToken } = await signUpRes.json();
