@@ -41,6 +41,17 @@ export const app = new Elysia()
   }))
 	.use(
 		openapi({
+			documentation: {
+				info: {
+					title: 'Bun Elysia React Boilerplate API',
+					version: '1.0.50',
+					description: 'Full-stack monolithic API powered by Bun and Elysia',
+				},
+				tags: [
+					{ name: 'Auth', description: 'Authentication and token management' },
+					{ name: 'Users', description: 'User profile operations' },
+				],
+			},
 			references: fromTypes()
 		})
 	)

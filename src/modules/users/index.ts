@@ -15,7 +15,7 @@ const paramsSchema = t.Object({ id: t.String({ format: 'uuid' }) });
 export function makeUsersPlugin(db: Database) {
   const service = new UserService(db);
 
-  return new Elysia({ prefix: '/users' })
+  return new Elysia({ prefix: '/users', tags: ['Users'] })
     .get('/:id', async ({ params, set }) => {
       const result = await service.getUser(params.id);
       set.status = result.status;
@@ -26,6 +26,7 @@ export function makeUsersPlugin(db: Database) {
         200: userResponseSchema,
         404: errorSchema,
       },
+      detail: { summary: 'Get user profile', description: 'Retrieve a user profile by ID' },
     })
     .patch('/:id', async ({ params, body, set }) => {
       const result = await service.updateUser(params.id, body);
@@ -41,5 +42,6 @@ export function makeUsersPlugin(db: Database) {
         404: errorSchema,
         409: errorSchema,
       },
+      detail: { summary: 'Update user profile', description: 'Update user profile fields such as username' },
     });
 }

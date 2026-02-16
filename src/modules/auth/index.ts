@@ -15,7 +15,7 @@ const authResponseSchema = t.Object({
 export function makeAuthPlugin(db: Database, jwt: Jwt) {
   const service = new AuthService(db, jwt);
 
-  return new Elysia({ prefix: '/auth' })
+  return new Elysia({ prefix: '/auth', tags: ['Auth'] })
     .post('/sign-up', async ({ body, set }) => {
       const result = await service.signUp(body);
       set.status = result.status;
@@ -30,6 +30,7 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
         201: authResponseSchema,
         409: t.Object({ error: t.String() }),
       },
+      detail: { summary: 'Register a new user', description: 'Create a new account with email, password, and username' },
     })
     .post('/sign-in', async ({ body, set }) => {
       const result = await service.signIn(body);
@@ -44,6 +45,7 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
         200: authResponseSchema,
         401: t.Object({ error: t.String() }),
       },
+      detail: { summary: 'Authenticate with credentials', description: 'Sign in with email and password to receive auth and refresh tokens' },
     })
     .post('/sign-out', async ({ body }) => {
       const result = await service.signOut(body);
@@ -55,6 +57,7 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
       response: {
         200: t.Object({ success: t.Boolean() }),
       },
+      detail: { summary: 'Revoke a refresh token', description: 'Sign out by invalidating the provided refresh token' },
     })
     .post('/refresh', async ({ body, set }) => {
       const result = await service.refresh(body);
@@ -68,6 +71,7 @@ export function makeAuthPlugin(db: Database, jwt: Jwt) {
         200: t.Object({ authToken: t.String(), refreshToken: t.String() }),
         401: t.Object({ error: t.String() }),
       },
+      detail: { summary: 'Refresh auth token', description: 'Exchange a valid refresh token for new auth and refresh tokens' },
     });
 }
 
