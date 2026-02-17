@@ -1,4 +1,4 @@
-import { createPinoLogger } from "@bogeychan/elysia-logger";
+import { createPinoLogger, isContext } from "@bogeychan/elysia-logger";
 import { fromTypes, openapi } from "@elysiajs/openapi";
 import { type Context, Elysia } from "elysia";
 import { helmet } from "elysia-helmet";
@@ -13,7 +13,48 @@ declare const __GIT_HASH__: string | undefined;
 
 const config = await loadConfig();
 
-const log = createPinoLogger();
+const log = createPinoLogger({
+  formatters: {
+    log(object: Record<string, unknown>) {
+      if (isContext(object)) {
+        const ctx = object as {
+          request: Request;
+          requestId?: string;
+          set: { status?: number | string; headers?: Record<string, string> };
+          store: { responseTime?: number };
+          isError: boolean;
+          code?: string;
+          error?: { message?: string; code?: string; response?: string };
+        };
+        const contentLength = ctx.set.headers?.["content-length"];
+        const remoteIp =
+          ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+          ctx.request.headers.get("x-real-ip") ??
+          (
+            ctx as { server?: { requestIP?: (req: Request) => { address: string } | null } }
+          ).server?.requestIP?.(ctx.request)?.address;
+        const result: Record<string, unknown> = {
+          requestId: ctx.requestId,
+          remoteIp,
+          request: ctx.request,
+          status: ctx.set.status ?? 200,
+          responseSize: contentLength ? Number(contentLength) : undefined,
+          userAgent: ctx.request.headers.get("user-agent"),
+        };
+        if (ctx.isError) {
+          result.code = ctx.code;
+          if (ctx.error && "message" in ctx.error) {
+            result.message = ctx.error.message;
+          }
+        } else if (ctx.store.responseTime) {
+          result.responseTime = ctx.store.responseTime;
+        }
+        return result;
+      }
+      return object;
+    },
+  },
+});
 const spaPath = `/${crypto.randomUUID()}`;
 // SPA Proxy is used to serve the SPA and run through the middleware
 // Otherwise Bun shortcircuits the request and returns the SPA directly
