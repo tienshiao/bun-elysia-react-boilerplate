@@ -31,5 +31,5 @@ export function makeAuthGuard(jwt: Jwt) {
         } as AuthUser | null,
       };
     })
-    .as("plugin");
+    .as("scoped");
 }

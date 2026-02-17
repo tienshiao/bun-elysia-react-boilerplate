@@ -1,11 +1,11 @@
-import { importPKCS8, importSPKI, jwtVerify, type KeyLike, SignJWT } from "jose";
+import { type CryptoKey, importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose";
 
 export interface Jwt {
   sign(payload: Record<string, unknown>): Promise<string>;
   verify(token: string): Promise<Record<string, unknown> | false>;
 }
 
-export function createJwt(privateKey: KeyLike, publicKey: KeyLike): Jwt {
+export function createJwt(privateKey: CryptoKey, publicKey: CryptoKey): Jwt {
   return {
     async sign(payload) {
       const { exp, nbf, iat, ...rest } = payload;
