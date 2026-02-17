@@ -48,10 +48,10 @@ export function makeAllowRoles(): AllowRoles {
   return function allowRoles(...roles: RoleClass[]) {
     return {
       beforeHandle(ctx: Record<string, unknown>) {
-        const { user, params, error } = ctx as {
+        const { user, params, set } = ctx as {
           user: AuthUser | null;
           params: Record<string, string>;
-          error: (status: number, body: unknown) => unknown;
+          set: { status: number };
         };
         const roleCtx: RoleContext = { user, params };
 
@@ -61,7 +61,8 @@ export function makeAllowRoles(): AllowRoles {
           }
         }
 
-        return error(403, { error: "Forbidden" });
+        set.status = 403;
+        return { error: "Forbidden" };
       },
     };
   };
