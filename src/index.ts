@@ -5,6 +5,7 @@ import { helmet } from "elysia-helmet";
 
 import { makeApiPlugin } from "@/api.ts";
 import { loadConfig } from "@/config.ts";
+import { makeStaticRoutes } from "@/static.ts";
 
 import index from "./frontend/index.html";
 
@@ -73,7 +74,11 @@ const spaProxy = async ({ server }: Pick<Context, "server">) => {
 
 const { plugin: apiPlugin, client } = await makeApiPlugin(config);
 
-export const app = new Elysia()
+// Static routes are served by Bun directly, bypassing Elysia middleware
+// (no logging, request-ids, security headers, etc.)
+const staticRoutes = makeStaticRoutes();
+
+export const app = new Elysia({ serve: { routes: staticRoutes } })
   .use(log.into())
   .derive(({ request }) => {
     const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();

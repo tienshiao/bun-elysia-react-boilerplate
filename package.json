@@ -3,7 +3,7 @@
   "version": "1.0.50",
   "scripts": {
     "test": "bun test",
-    "dev": "tsr watch & bun run --watch src/index.ts",
+    "dev": "bun run scripts/generate-public-manifest.ts && tsr watch & bun run --watch src/index.ts",
     "build:server": "bun run build-single.ts",
     "build:server:all": "bun run build-all.ts",
     "db:generate": "drizzle-kit generate",

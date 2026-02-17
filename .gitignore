@@ -45,6 +45,9 @@ package-lock.json
 # generated route tree
 src/routeTree.gen.ts
 
+# generated public file manifest
+src/_public-files.ts
+
 # executables
 /dist-executables
 
