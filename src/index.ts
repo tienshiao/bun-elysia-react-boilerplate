@@ -28,7 +28,7 @@ const log = createPinoLogger({
         };
         const contentLength = ctx.set.headers?.["content-length"];
         const remoteIp =
-          ctx.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+          ctx.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
           ctx.request.headers.get("x-real-ip") ??
           (
             ctx as { server?: { requestIP?: (req: Request) => { address: string } | null } }
@@ -140,7 +140,7 @@ export const app = new Elysia()
   .use(apiPlugin)
   .get(spaPath, index, { detail: { hide: true } })
   .get("/*", spaProxy, { detail: { hide: true } })
-  .listen(config.server.port);
+  .listen({ port: config.server.port, reusePort: false });
 
 export type App = typeof app;
 
