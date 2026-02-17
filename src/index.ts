@@ -30,8 +30,14 @@ const spaProxy = async ({ server }: Pick<Context, "server">) => {
   );
 };
 
+const { plugin: apiPlugin, client } = await makeApiPlugin(config);
+
 export const app = new Elysia()
   .use(log.into())
+  .derive(({ request }) => {
+    const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+    return { requestId, requestLog: log.child({ requestId }) };
+  })
   .use(
     helmet({
       contentSecurityPolicy: {
@@ -53,6 +59,7 @@ export const app = new Elysia()
         tags: [
           { name: "Auth", description: "Authentication and token management" },
           { name: "Users", description: "User profile operations" },
+          { name: "Health", description: "Health check endpoints" },
         ],
         components: {
           securitySchemes: {
@@ -67,11 +74,29 @@ export const app = new Elysia()
       references: fromTypes(),
     }),
   )
-  .onBeforeHandle(({ set }) => {
+  .onBeforeHandle(({ set, requestId }) => {
     set.headers["x-version"] =
       typeof __VERSION__ !== "undefined" ? `${__VERSION__} (${__GIT_HASH__})` : "dev";
+    set.headers["x-request-id"] = requestId;
   })
-  .use(await makeApiPlugin(config))
+  .onError(({ code, error, set, ...ctx }) => {
+    const logger = "requestLog" in ctx ? (ctx.requestLog as typeof log) : log;
+
+    if (code === "VALIDATION") {
+      logger.warn({ err: error }, "Validation error");
+      return;
+    }
+
+    if (code === "NOT_FOUND") {
+      set.status = 404;
+      return { error: "Not found" };
+    }
+
+    logger.error({ err: error }, "Unhandled error");
+    set.status = 500;
+    return { error: "Internal server error" };
+  })
+  .use(apiPlugin)
   .get(spaPath, index, { detail: { hide: true } })
   .get("/*", spaProxy, { detail: { hide: true } })
   .listen(config.server.port);
@@ -82,3 +107,14 @@ log.info({ url: app.server?.url?.toString() }, "Server started");
 if (typeof __VERSION__ !== "undefined") {
   log.info({ version: __VERSION__, gitHash: __GIT_HASH__ }, "Build info");
 }
+
+const shutdown = async (signal: string) => {
+  log.info({ signal }, "Shutting down");
+  app.stop();
+  await client.end();
+  log.info("Shutdown complete");
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
