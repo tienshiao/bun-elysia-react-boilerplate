@@ -2,7 +2,8 @@
   "name": "bun-elysia-react-boilerplate",
   "version": "1.0.50",
   "scripts": {
-    "test": "bun run scripts/generate-public-manifest.ts && bun test",
+    "pretest": "bun run scripts/generate-public-manifest.ts",
+    "test": "bun test",
     "dev": "bun run scripts/generate-public-manifest.ts && tsr watch & bun run --watch src/index.ts",
     "build:server": "bun run build-single.ts",
     "build:server:all": "bun run build-all.ts",
